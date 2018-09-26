@@ -16,11 +16,11 @@ class Encoder:
     sw = None
 
     polling_interval = None  # Polling interval (in ms)
-    sw_debounce_time = 250  # Debounce time (for switch only)
+    sw_debounce_time = 100  # Debounce time (for switch only)
 
     step = 1  # Scale step from min to max
-    max_counter = 100  # Scale max
-    min_counter = 0  # Scale min
+    max_counter = 10000000  # Scale max
+    min_counter = -1000  # Scale min
     counter = 0  # Initial scale position
     counter_loop = False  # If True, when at MAX, loop to MIN (-> 0, ..., MAX, MIN, ..., ->)
 
@@ -36,6 +36,7 @@ class Encoder:
             raise BaseException("You must specify at least the CLK & DT pins")
         self.clk = CLK
         self.dt = DT
+        self.reset = 0
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.clk, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         GPIO.setup(self.dt, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
@@ -54,9 +55,16 @@ class Encoder:
         else:
             self.counter_loop = False
 
-        self.min_counter = params['scale_min']
-        self.counter = self.min_counter + 0
-        self.max_counter = params['scale_max']
+        if 'scale_min' in params and params['scale_min'] is True:
+            self.min_counter = params['scale_min']
+
+        if 'counter' in params :
+            self.counter = params['counter']
+            self.reset = 1
+            logger.info("counter boucle.")
+        
+        if 'max_counter' in params and params['max_counter'] is True:
+            self.max_counter = params['scale_max']        
 
         if 'step' in params:
             self.step = params['step']
@@ -95,13 +103,18 @@ class Encoder:
                         swTriggered = False
 
                 # Encoder part
+                #print(self.reset)
                 clkState = GPIO.input(self.clk)
                 dtState = GPIO.input(self.dt)
-
+                if self.reset == 1:
+                    logger.info("boucle reste = 1..")
+                    self.counter = 0
+                    self.reset = 0
                 if clkState != self.clkLastState:
 
                     if dtState != clkState:
-
+                        #logger.info("Exiting...")
+                        #print(self.reset)
                         if self.counter + self.step <= self.max_counter:
                             # Loop or not, increment if the max isn't reached
                             self.counter += self.step
@@ -130,6 +143,7 @@ class Encoder:
 
                 self.clkLastState = clkState
                 sleep(self.polling_interval / 1000)
+                #sleep(5)
             except BaseException as e:
                 logger.info("Exiting...")
                 logger.info(e)
