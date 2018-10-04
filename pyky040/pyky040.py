@@ -61,7 +61,7 @@ class Encoder:
         if 'counter' in params :
             self.counter = params['counter']
             self.reset = 1
-            logger.info("counter boucle.")
+            #logger.info("counter boucle.")
         
         if 'max_counter' in params and params['max_counter'] is True:
             self.max_counter = params['scale_max']        
@@ -107,7 +107,7 @@ class Encoder:
                 clkState = GPIO.input(self.clk)
                 dtState = GPIO.input(self.dt)
                 if self.reset == 1:
-                    logger.info("boucle reste = 1..")
+                    #logger.info("boucle reste = 1..")
                     self.counter = 0
                     self.reset = 0
                 if clkState != self.clkLastState:
