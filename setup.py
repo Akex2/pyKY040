@@ -8,7 +8,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='Rpi_Encoder',
+    name='Rpi_encoder',
     version='0.1.3',
     description='High-level interface for the KY040 rotary encoder and switch.',
     long_description=long_description,
